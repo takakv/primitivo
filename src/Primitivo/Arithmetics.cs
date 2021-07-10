@@ -1,7 +1,11 @@
+using System;
 using System.Numerics;
 
 namespace Primitivo
 {
+    /// <summary>
+    /// Provides basic arithmetic functions for unsigned integers.
+    /// </summary>
     public class Arithmetics
     {
         // Euclid's GCD algorithm using subtraction.
@@ -39,6 +43,7 @@ namespace Primitivo
         }
 
         // Stein's GCD algorithm using textbook approach.
+        // https://xlinux.nist.gov/dads/HTML/binaryGCD.html
         public static ulong TextbookBinaryGcd(ulong a, ulong b)
         {
             // gcd(a, 0) = gcd(0, a) = a.
@@ -79,6 +84,7 @@ namespace Primitivo
                 }
             }
 
+            // Make up for GCD halving.
             return b * g;
         }
 
@@ -92,20 +98,47 @@ namespace Primitivo
             // 2 as a common divisor count. Makes up for
             // factoring out 2 x times: shift = 2^x.
             int shift = BitOperations.TrailingZeroCount(a | b);
-            // Make a odd.
-            a >>= BitOperations.TrailingZeroCount(a);
+            // Make b odd. It will remain odd.
+            b >>= BitOperations.TrailingZeroCount(b);
 
-            while (true)
+            while (a > 0)
             {
+                a >>= BitOperations.TrailingZeroCount(a);
                 if (a < b) (a, b) = (b, a);
                 a -= b;
-
-                // Make up for even GCD halving:
-                // gcd(2a, 2b) = 2 * gcd(a, b) for even a, b.
-                if (a == 0) return b << shift;
-
-                b >>= BitOperations.TrailingZeroCount(b);
             }
+
+            return b << shift;
+        }
+
+        /// <summary>
+        /// Computes the GCD of two unsigned integers.
+        /// </summary>
+        /// <param name="left">First value.</param>
+        /// <param name="right">Second value.</param>
+        /// <returns>The GCD of left and right.</returns>
+        public static ulong Gcd(ulong left, ulong right)
+        {
+            return right > left ? BinaryGcd(right, left) : BinaryGcd(left, right);
+        }
+
+        /// <summary>
+        /// Computes the LCM of two unsigned integers.
+        /// </summary>
+        /// <param name="left">First value.</param>
+        /// <param name="right">Second value.</param>
+        /// <returns>The LCM of left and right.</returns>
+        /// <exception cref="OverflowException">
+        /// If the LCM of <paramref name="left" /> and <paramref name="right" /> is larger than 64bits.
+        /// </exception>
+        /// <remarks>Returns 0 if either parameter or both are 0.</remarks>
+        public static ulong Lcm(ulong left, ulong right)
+        {
+            if (left == 0 && right == 0) return 0;
+            // Dividing first prevents some overflows.
+            ulong lcm = left / Gcd(left, right) * right;
+            if (lcm < left || lcm < right) throw new OverflowException("LCM was larger than 64bits.");
+            return lcm;
         }
     }
 }
