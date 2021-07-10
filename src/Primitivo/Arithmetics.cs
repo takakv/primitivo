@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace Primitivo
 {
     public class Arithmetics
@@ -36,8 +38,8 @@ namespace Primitivo
             return a;
         }
 
-        // Stein's GCD algorithm.
-        public static ulong BinaryGcd(ulong a, ulong b)
+        // Stein's GCD algorithm using textbook approach.
+        public static ulong TextbookBinaryGcd(ulong a, ulong b)
         {
             // gcd(a, 0) = gcd(0, a) = a.
             if (a == 0 || b == 0) return a | b;
@@ -78,6 +80,32 @@ namespace Primitivo
             }
 
             return b * g;
+        }
+
+        // Stein's GCD algorithm, compact version.
+        // See textbook version for additional explanations.
+        public static ulong BinaryGcd(ulong a, ulong b)
+        {
+            // gcd(a, 0) = gcd(0, a) = a.
+            if (a == 0 || b == 0) return a | b;
+
+            // 2 as a common divisor count. Makes up for
+            // factoring out 2 x times: shift = 2^x.
+            int shift = BitOperations.TrailingZeroCount(a | b);
+            // Make a odd.
+            a >>= BitOperations.TrailingZeroCount(a);
+
+            while (true)
+            {
+                if (a < b) (a, b) = (b, a);
+                a -= b;
+
+                // Make up for even GCD halving:
+                // gcd(2a, 2b) = 2 * gcd(a, b) for even a, b.
+                if (a == 0) return b << shift;
+
+                b >>= BitOperations.TrailingZeroCount(b);
+            }
         }
     }
 }
