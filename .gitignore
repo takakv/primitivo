@@ -1,0 +1,8 @@
+# Editors
+.vs/
+.idea/
+.vscode/
+
+# Build directories
+bin/
+obj/
